@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { Modal, SearchItem } from "../../components/index";
 import icon from "../../utils/icons";
@@ -16,6 +16,9 @@ const Search = () => {
   const [isShowModal, setIsShowModal] = useState(false);
   const [content, setContent] = useState([]);
   const [name, setName] = useState("");
+  const [queries, setQueries] = useState({});
+  const [arrMinMax, setArrMinMax] = useState({});
+
   const { provinces, areas, prices, categories } = useSelector(
     (state) => state.app
   );
@@ -24,6 +27,17 @@ const Search = () => {
     setContent(content);
     setName(name);
   };
+  const handleSubmit = useCallback(
+    (e, query, arrMaxMin) => {
+      e.stopPropagation();
+      setQueries((prev) => ({ ...prev, ...query }));
+      setIsShowModal(false);
+      arrMaxMin && setArrMinMax((prev) => ({ ...prev, ...arrMaxMin }));
+    },
+    [isShowModal, queries]
+  );
+  // console.log(queries);
+
   return (
     <>
       <div className=" p-[10px] w-4/6 my-3 bg-[#febb02] rounded-lg flex-col lg:flex-row flex items-center justify-around gap-2">
@@ -35,7 +49,8 @@ const Search = () => {
             IconBefore={<GiFamilyHouse />}
             FontWeight
             IconAfter={<BsChevronRight color="rgb(156,163,175)" />}
-            text="Phòng trọ, nhà trọ"
+            text={queries.category}
+            Default="Phòng trọ, nhà trọ"
           />
         </span>
         <span
@@ -45,7 +60,8 @@ const Search = () => {
           <SearchItem
             IconBefore={<HiOutlineLocationMarker />}
             IconAfter={<BsChevronRight color="rgb(156,163,175)" />}
-            text="Toàn quốc"
+            text={queries.province}
+            Default="Toàn quốc"
           />
         </span>
         <span
@@ -55,7 +71,8 @@ const Search = () => {
           <SearchItem
             IconBefore={<TbReportMoney />}
             IconAfter={<BsChevronRight color="rgb(156,163,175)" />}
-            text="Chọn giá"
+            text={queries.price}
+            Default="Chọn giá"
           />
         </span>
         <span
@@ -65,7 +82,8 @@ const Search = () => {
           <SearchItem
             IconBefore={<RiCrop2Line />}
             IconAfter={<BsChevronRight color="rgb(156,163,175)" />}
-            text="Chọn diện tích"
+            text={queries.area}
+            Default="Chọn diện tích"
           />
         </span>
         <button
@@ -77,7 +95,14 @@ const Search = () => {
         </button>
       </div>
       {isShowModal && (
-        <Modal content={content} name={name} setIsShowModal={setIsShowModal} />
+        <Modal
+          handleSubmit={handleSubmit}
+          content={content}
+          name={name}
+          setIsShowModal={setIsShowModal}
+          queries={queries}
+          arrMinMax={arrMinMax}
+        />
       )}
     </>
   );

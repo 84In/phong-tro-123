@@ -1,10 +1,39 @@
 import React, { useEffect, useState } from "react";
+import { getCodes } from "../utils/common/getCode";
+import { getNumber } from "../utils/common/getNumbers";
 import icons from "../utils/icons";
 
-const Modal = ({ setIsShowModal, content, name }) => {
+const Modal = ({
+  setIsShowModal,
+  content,
+  name,
+  handleSubmit,
+  queries,
+  arrMinMax,
+}) => {
   const { GrLinkPrevious } = icons;
-  const [percent1, setPercent1] = useState(0);
-  const [percent2, setPercent2] = useState(100);
+  const [percent1, setPercent1] = useState(
+    name === "price" &&
+      Array.isArray(arrMinMax.priceArr) &&
+      arrMinMax.priceArr.length > 0
+      ? arrMinMax.priceArr[0]
+      : name === "area" &&
+        Array.isArray(arrMinMax.areaArr) &&
+        arrMinMax.areaArr.length > 0
+      ? arrMinMax.areaArr[0]
+      : 0
+  );
+  const [percent2, setPercent2] = useState(
+    name === "price" &&
+      Array.isArray(arrMinMax.priceArr) &&
+      arrMinMax.priceArr.length > 0
+      ? arrMinMax.priceArr[1]
+      : name === "area" &&
+        Array.isArray(arrMinMax.areaArr) &&
+        arrMinMax.areaArr.length > 0
+      ? arrMinMax.areaArr[1]
+      : 100
+  );
   const [activeEl, setActiveEl] = useState("");
 
   useEffect(() => {
@@ -34,7 +63,6 @@ const Modal = ({ setIsShowModal, content, name }) => {
       setPercent2(percent);
     }
   };
-
   const conver100toTarget = (percent) => {
     let target = name === "price" ? 1.5 : name === "area" ? 9 : 1;
     return Math.ceil(Math.round(percent * target) / 5) * 0.5;
@@ -47,36 +75,52 @@ const Modal = ({ setIsShowModal, content, name }) => {
       ? (percent / 90) * 100
       : 1;
   };
-  const getNumber = (string) => {
-    let arr = string.split(" ");
-    return arr
-      .map((item) =>
-        item.search("m") !== -1 ? +item.slice(0, item.length - 1) : +item
-      )
-      .filter((item) => !item === false);
-  };
+
   const handlePrice = (code, value) => {
     setActiveEl(code);
     let minTarget = name === "price" ? 1 : name === "area" ? 20 : 0;
     let maxTarget = name === "price" ? 15 : name === "area" ? 90 : 0;
-    let arrMinMax = getNumber(value);
-    if (arrMinMax.length === 1) {
-      if (arrMinMax[0] === minTarget) {
+    let arrMaxMin = getNumber(value);
+    if (arrMaxMin.length === 1) {
+      if (arrMaxMin[0] === minTarget) {
         setPercent1(0);
         setPercent2(converTargetto100(minTarget));
-      } else if (arrMinMax[0] === maxTarget) {
+      } else if (arrMaxMin[0] === maxTarget) {
         setPercent1(100);
         setPercent2(100);
       }
     } else {
-      setPercent1(converTargetto100(arrMinMax[0]));
-      setPercent2(converTargetto100(arrMinMax[1]));
+      setPercent1(converTargetto100(arrMaxMin[0]));
+      setPercent2(converTargetto100(arrMaxMin[1]));
     }
   };
-  const handleSubmit = () => {
-    console.log("start: ", conver100toTarget(percent1));
-    console.log("end:", conver100toTarget(percent2));
+  const handleBeforeSubmit = (e) => {
+    const min = percent1 < percent2 ? percent1 : percent2;
+    const max = percent1 > percent2 ? percent1 : percent2;
+    const gaps =
+      getCodes([conver100toTarget(min), conver100toTarget(max)], content) || [];
+    handleSubmit(
+      e,
+      {
+        [`${name}Code`]: gaps?.map((item) => item.code),
+        [name]: `${
+          percent1 === 100 && percent2 === 100
+            ? `Trên  ${conver100toTarget(
+                percent1 <= percent2 ? percent1 : percent2
+              )}`
+            : `${conver100toTarget(
+                percent1 <= percent2 ? percent1 : percent2
+              )} - ${conver100toTarget(
+                percent2 >= percent1 ? percent2 : percent1
+              )} `
+        } ${name === "price" ? "triệu" : name === "area" ? "m2" : ""}`,
+      },
+      {
+        [`${name}Arr`]: [min, max],
+      }
+    );
   };
+
   return (
     <div
       onClick={() => {
@@ -114,7 +158,16 @@ const Modal = ({ setIsShowModal, content, name }) => {
                     type="radio"
                     name={name}
                     id={item.code}
+                    defaultChecked={
+                      item.code === queries[`${name}Code`] ? true : false
+                    }
                     value={item.code}
+                    onClick={(e) =>
+                      handleSubmit(e, {
+                        [name]: item.value,
+                        [`${name}Code`]: item.code,
+                      })
+                    }
                   />
                   <label htmlFor={item.code}>{item.value}</label>
                 </span>
@@ -124,12 +177,18 @@ const Modal = ({ setIsShowModal, content, name }) => {
             <div className="p-12 py-20">
               <div className="flex flex-col items-center justify-center relative">
                 <div className="z-30 absolute top-[-48px] font-bold text-xl text-orange-600">
-                  {`Từ ${conver100toTarget(
-                    percent1 <= percent2 ? percent1 : percent2
-                  )} - ${conver100toTarget(
-                    percent2 >= percent1 ? percent2 : percent1
-                  )}${
-                    name === "price" ? "triệu+" : name === "area" ? "m2" : ""
+                  {`${
+                    percent1 === 100 && percent2 === 100
+                      ? `Trên  ${conver100toTarget(
+                          percent1 <= percent2 ? percent1 : percent2
+                        )}`
+                      : `${conver100toTarget(
+                          percent1 <= percent2 ? percent1 : percent2
+                        )} - ${conver100toTarget(
+                          percent2 >= percent1 ? percent2 : percent1
+                        )} `
+                  } ${
+                    name === "price" ? "triệu" : name === "area" ? "m2" : ""
                   }`}
                 </div>
                 <div
@@ -217,7 +276,7 @@ const Modal = ({ setIsShowModal, content, name }) => {
           <button
             type="button"
             className="w-full bg-[#FFA500] py-2 font-medium rounded-bl-md rounded-br-md"
-            onClick={handleSubmit}
+            onClick={handleBeforeSubmit}
           >
             ÁP DỤNG
           </button>
