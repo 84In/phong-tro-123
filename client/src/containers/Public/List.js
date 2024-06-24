@@ -16,13 +16,17 @@ const List = ({ categoryCode }) => {
     for (let entry of searchParams.entries()) {
       params.push(entry);
     }
+    // console.log(params);
     let searchParamsObject = {};
-    params?.map((i) => {
-      searchParamsObject = { ...searchParamsObject, [i[0]]: i[1] };
+    params?.forEach((i) => {
+      if (Object.keys(searchParamsObject)?.some((item) => item === i[0])) {
+        searchParamsObject[i[0]] = [...searchParamsObject[i[0]], i[1]];
+      } else {
+        searchParamsObject = { ...searchParamsObject, [i[0]]: [i[1]] };
+      }
     });
-
-    if (categoryCode) searchParamsObject.categoryCode = categoryCode;
     // console.log(searchParamsObject);
+    if (categoryCode) searchParamsObject.categoryCode = categoryCode;
     dispatch(getPostsLimit(searchParamsObject));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, categoryCode]);

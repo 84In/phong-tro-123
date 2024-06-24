@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { PageNumber } from "../../components";
 import icons from "../../utils/icons";
 
-const { GrLinkNext, GrLinkPrevious } = icons;
+const { GrLinkNext } = icons;
 const LIMIT = 3;
 const Pagination = () => {
   const { count, posts } = useSelector((state) => state.post);
@@ -22,24 +22,25 @@ const Pagination = () => {
   useEffect(() => {
     let maxPage = Math.ceil(count / process.env.REACT_APP_LIMIT_POSTS);
     let end = currentPage + LIMIT > maxPage ? maxPage : currentPage + LIMIT;
-    let start = currentPage - LIMIT <= 0 ? 1 : currentPage - LIMIT;
+    let start = currentPage - LIMIT <= 1 ? 2 : currentPage - LIMIT;
     let temp = [];
     for (let i = start; i <= end; i++) temp.push(i);
     setArrPage(temp);
-    currentPage + LIMIT >= maxPage ? setIsHideEnd(true) : setIsHideEnd(false);
-    currentPage - LIMIT <= 1 ? setIsHideStart(true) : setIsHideStart(false);
+    currentPage >= maxPage - 1 ? setIsHideEnd(true) : setIsHideEnd(false);
+    currentPage <= 3 ? setIsHideStart(true) : setIsHideStart(false);
   }, [count, posts, currentPage]);
   return (
     <div className="flex items-center justify-center gap-2 py-5">
-      {!isHideStart && (
+      {(!isHideStart || currentPage <= LIMIT) && (
         <PageNumber
-          icon={<GrLinkPrevious />}
+          // icon={<GrLinkPrevious />}
           text={1}
           setCurrentPage={setCurrentPage}
+          currentPage={currentPage}
           type="start"
         />
       )}
-      {!isHideStart && <PageNumber text={"..."} />}
+      {!isHideStart && currentPage !== 3 && <PageNumber text={"..."} />}
       {arrPage.length > 0 &&
         arrPage.map((item) => {
           return (

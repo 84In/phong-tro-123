@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { getCodes } from "../utils/common/getCode";
+import React, { memo, useEffect, useState } from "react";
 import { getNumber } from "../utils/common/getNumbers";
 import icons from "../utils/icons";
 
@@ -10,6 +9,7 @@ const Modal = ({
   handleSubmit,
   queries,
   arrMinMax,
+  defaultText,
 }) => {
   const { GrLinkPrevious } = icons;
   const [percent1, setPercent1] = useState(
@@ -97,22 +97,16 @@ const Modal = ({
   const handleBeforeSubmit = (e) => {
     const min = percent1 < percent2 ? percent1 : percent2;
     const max = percent1 > percent2 ? percent1 : percent2;
-    const gaps =
-      getCodes([conver100toTarget(min), conver100toTarget(max)], content) || [];
+    const minMax = [conver100toTarget(min), conver100toTarget(max)];
+    // const gaps =  getCodes([conver100toTarget(min), conver100toTarget(max)], content) || [];
     handleSubmit(
       e,
       {
-        [`${name}Code`]: gaps?.map((item) => item.code),
+        [`${name}Number`]: minMax,
         [name]: `${
           percent1 === 100 && percent2 === 100
-            ? `Trên  ${conver100toTarget(
-                percent1 <= percent2 ? percent1 : percent2
-              )}`
-            : `${conver100toTarget(
-                percent1 <= percent2 ? percent1 : percent2
-              )} - ${conver100toTarget(
-                percent2 >= percent1 ? percent2 : percent1
-              )} `
+            ? `Trên  ${conver100toTarget(min)}`
+            : `${conver100toTarget(min)} - ${conver100toTarget(max)} `
         } ${name === "price" ? "triệu" : name === "area" ? "m2" : ""}`,
       },
       {
@@ -133,7 +127,7 @@ const Modal = ({
           e.stopPropagation();
           setIsShowModal(true);
         }}
-        className="w-2/4 bg-white rounded-md "
+        className="w-2/5 h-[500px] bg-white rounded-md relative overflow-auto"
       >
         <div className="h-[45px] px-4 flex items-center border-b border-gray-200">
           <span
@@ -146,9 +140,25 @@ const Modal = ({
             <GrLinkPrevious size={24} />
           </span>
         </div>
-        <div className="p-4 flex flex-col">
-          {(name === "category" || name === "province") &&
-            content?.map((item) => {
+        {(name === "category" || name === "province") && (
+          <div className="p-4 flex flex-col">
+            <span className="border-b border-gray-200 py-2 flex gap-2 items-center">
+              <input
+                type="radio"
+                name={name}
+                id={`default`}
+                defaultChecked={!queries[`${name}Code`] ? true : false}
+                value={defaultText}
+                onClick={(e) =>
+                  handleSubmit(e, {
+                    [name]: defaultText,
+                    [`${name}Code`]: null,
+                  })
+                }
+              />
+              <label htmlFor={`default`}>{defaultText}</label>
+            </span>
+            {content?.map((item) => {
               return (
                 <span
                   key={item.code}
@@ -173,6 +183,9 @@ const Modal = ({
                 </span>
               );
             })}
+          </div>
+        )}
+        <div className="p-4 flex flex-col">
           {(name === "price" || name === "area") && (
             <div className="p-12 py-20">
               <div className="flex flex-col items-center justify-center relative">
@@ -251,7 +264,7 @@ const Modal = ({
                   </span>
                 </div>
               </div>
-              <div className=" mt-24">
+              <div className=" mt-24 object-contain">
                 <h4 className="font-medium mb-6">Chọn nhanh</h4>
                 <div className="flex gap-2 items-center flex-wrap w-full">
                   {content?.map((item) => {
@@ -275,7 +288,7 @@ const Modal = ({
         {(name === "price" || name === "area") && (
           <button
             type="button"
-            className="w-full bg-[#FFA500] py-2 font-medium rounded-bl-md rounded-br-md"
+            className="w-full bg-[#FFA500] py-2 font-medium rounded-bl-md rounded-br-md bottom-0 absolute"
             onClick={handleBeforeSubmit}
           >
             ÁP DỤNG
@@ -286,4 +299,4 @@ const Modal = ({
   );
 };
 
-export default Modal;
+export default memo(Modal);

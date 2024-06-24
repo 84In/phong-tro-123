@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import db from "../models";
 
 export const getPostsService = () =>
@@ -34,12 +35,27 @@ export const getPostsService = () =>
       reject(error);
     }
   });
-export const getPostsLimitService = (page, query) =>
+export const getPostsLimitService = (
+  page,
+  query,
+  { priceNumber, areaNumber }
+) =>
   new Promise(async (resolve, reject) => {
     try {
       let offset = !page || +page <= 1 ? 0 : +page - 1;
+      const queries = {
+        ...query,
+      };
+      if (priceNumber) queries.priceNumber = { [Op.between]: priceNumber };
+      if (areaNumber) queries.areaNumber = { [Op.between]: areaNumber };
+      /* priceNumber: {
+            [Op.between]: priceNumber,
+          },
+          areaNumber: {
+            [Op.between]: areaNumber,
+          }, */
       const response = await db.Post.findAndCountAll({
-        where: query,
+        where: queries,
         raw: true,
         nest: true,
         offset: offset * +process.env.LIMIT,
@@ -65,7 +81,7 @@ export const getPostsLimitService = (page, query) =>
       });
       resolve({
         err: response ? 0 : 1,
-        msg: response ? "OK" : "Gettin posts is failed.",
+        msg: response ? "OK" : "Getting posts is failed.",
         response,
       });
     } catch (error) {

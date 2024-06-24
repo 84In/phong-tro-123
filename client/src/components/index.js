@@ -11,3 +11,4 @@ export { default as ProvinceBtn } from "./ProvinceBtn";
 export { default as RelatedPost } from "./RelatedPost";
 export { default as SearchItem } from "./SearchItem";
 export { default as Sitem } from "./Sitem";
+export { default as User } from "./User";

@@ -28,7 +28,7 @@ const Item = ({
     <div className="w-full flex border-t border-orange-600 p-4">
       <Link
         to={`chi-tiet/${formartVietnameseToString(title)}/${id}`}
-        className="w-3/6 flex flex-wrap gap-[2px] items-center relative cursor-pointer"
+        className="w-3/6 flex flex-wrap gap-[2px] items-center justify-center relative cursor-pointer"
       >
         {images.length > 0 &&
           images
@@ -39,7 +39,7 @@ const Item = ({
                   key={index}
                   src={i}
                   alt="review"
-                  className="w-[130px] h-[100px] object-cover"
+                  className="w-[47%] h-[120px] object-cover"
                 />
               );
             })}

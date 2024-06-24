@@ -9,3 +9,4 @@ export { default as Navigation } from "./Navigation";
 export { default as Pagination } from "./Pagination";
 export { default as Rental } from "./Rental";
 export { default as Search } from "./Search";
+export { default as SearchDetail } from "./SearchDetail";
