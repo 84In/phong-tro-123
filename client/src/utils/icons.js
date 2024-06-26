@@ -1,6 +1,7 @@
 import { AiOutlineLogout, AiOutlinePlusCircle } from "react-icons/ai";
 import { BsBookmarkStarFill, BsChevronRight, BsFilePost } from "react-icons/bs";
-import { FaChevronDown, FaRegCircleUser } from "react-icons/fa6";
+import { FaChevronDown, FaRegCircleUser, FaTrashCan } from "react-icons/fa6";
+import { FcAddImage, FcOldTimeCamera } from "react-icons/fc";
 import { FiSearch } from "react-icons/fi";
 import { GiFamilyHouse } from "react-icons/gi";
 import {
@@ -36,5 +37,8 @@ const icons = {
   FaChevronDown,
   AiOutlineLogout,
   GrContact,
+  FcAddImage,
+  FcOldTimeCamera,
+  FaTrashCan,
 };
 export default icons;

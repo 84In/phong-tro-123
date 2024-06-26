@@ -21,6 +21,11 @@ function App() {
       isLoggedIn && dispatch(actions.getCurrent());
     }, 1000);
   }, [isLoggedIn]);
+  useEffect(() => {
+    dispatch(actions.getPrices());
+    dispatch(actions.getAreas());
+    dispatch(actions.getProvinces());
+  }, []);
   return (
     <div className="w-full bg-primary">
       <Routes>

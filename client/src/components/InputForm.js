@@ -12,12 +12,12 @@ const InputForm = ({
   // truyền các tham số từ bên ngoài
   return (
     <div>
-      <label htmlFor="phone" className="text-xs">
+      <label htmlFor={keypayload} className="text-xs">
         {label}
       </label>
       <input
         type={type || "text"}
-        id="phone"
+        id={keypayload}
         className="outline-none bg-[#e8f0fe] p-2 rounded-md w-full"
         value={value}
         onChange={(e) =>

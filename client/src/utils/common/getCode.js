@@ -25,16 +25,20 @@ export const parseCode = (totals) => {
     };
   });
 };
+
 export const getCodes = (arrMinMax, key) => {
   const arrMinMaxKey = parseCode(key);
+  // console.log(arrMinMaxKey);
+  // console.log(arrMinMax);
   return arrMinMaxKey.filter(
     (item) =>
       (+arrMinMax[0] === arrMinMax[1] &&
-        +item.min < +arrMinMax[0] &&
-        +item.max >= +arrMinMax[0]) ||
+        +item.min <= +arrMinMax[0] &&
+        +item.max > +arrMinMax[0]) ||
       (+arrMinMax[0] !== +arrMinMax[1] &&
         +item.min >= +arrMinMax[0] &&
-        +item.min <= +arrMinMax[1]) ||
-      (+item.max >= arrMinMax[0] && +item.max <= +arrMinMax[1])
+        +item.min <= +arrMinMax[1] &&
+        +item.max >= arrMinMax[0] &&
+        +item.max <= +arrMinMax[1])
   );
 };
