@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Button, InputForm } from "../../components";
 import * as actions from "../../store/actions";
+import validate from "../../utils/common/validateFields";
 const Login = () => {
   const location = useLocation();
   /*useLocation là một hook cung cấp thông tin về đối tượng location hiện tại của ứng dụng. 
@@ -49,7 +50,7 @@ const Login = () => {
           phone: payload.phone,
           password: payload.password,
         };
-    let invalids = validate(finalPayload);
+    let invalids = validate(finalPayload, setInvalidFields);
     if (invalids === 0) {
       isRegister
         ? dispatch(actions.register(finalPayload))
@@ -57,54 +58,7 @@ const Login = () => {
     }
   };
   // console.log(invalidFields);
-  const validate = (payload) => {
-    let invalids = 0;
-    let fiels = Object.entries(payload);
-    fiels.forEach((item) => {
-      if (item[1] === "") {
-        setInvalidFields((prev) => [
-          ...prev,
-          {
-            name: item[0],
-            message: "Bạn không được bỏ trống trường này",
-          },
-        ]);
-        invalids++;
-      }
-    });
-    fiels.forEach((item) => {
-      switch (item[0]) {
-        case "password":
-          if (item[1].length < 6) {
-            setInvalidFields((prev) => [
-              ...prev,
-              {
-                name: item[0],
-                message: "Mặt khẩu phải có tối thiểu 6 ký tự.",
-              },
-            ]);
-            invalids++;
-          }
-          break;
-        case "phone":
-          if (!+item[1]) {
-            setInvalidFields((prev) => [
-              ...prev,
-              {
-                name: item[0],
-                message: "Số điện thoại không hợp lệ.",
-              },
-            ]);
-            invalids++;
-          }
-          break;
 
-        default:
-          break;
-      }
-    });
-    return invalids;
-  };
   //Kết nối submit truyền payload xử lý phân luồng xử lý đăng ký đăng nhập
   return (
     <div className="w-full flex items-center justify-center">

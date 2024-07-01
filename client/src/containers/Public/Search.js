@@ -42,15 +42,13 @@ const Search = () => {
     setName(name);
     setDefaultText(defaultText);
   };
-  const handleSubmit = useCallback(
-    (e, query, arrMaxMin) => {
-      e.stopPropagation();
-      setQueries((prev) => ({ ...prev, ...query }));
-      setIsShowModal(false);
-      arrMaxMin && setArrMinMax((prev) => ({ ...prev, ...arrMaxMin }));
-    },
-    [isShowModal, queries]
-  );
+  const handleSubmit = useCallback((e, query, arrMaxMin) => {
+    e.stopPropagation();
+    setQueries((prev) => ({ ...prev, ...query }));
+    setIsShowModal(false);
+    arrMaxMin && setArrMinMax((prev) => ({ ...prev, ...arrMaxMin }));
+  }, []);
+  /*isShowModal, queries*/
   // console.log(queries);
   const handleSearch = () => {
     const queryCodes = Object.entries(queries)
@@ -72,8 +70,16 @@ const Search = () => {
     let titleSearch = `${
       queryTextObj.category ? queryTextObj.category : "Cho thuê tất cả"
     } ${queryTextObj.province ? `ở khu vực ${queryTextObj.province}` : ""} 
-    ${queryTextObj.price ? `có giá ${queryTextObj.price}` : ""}
-    ${queryTextObj.area ? `diện tích ${queryTextObj.area}` : ""}`;
+    ${
+      queryTextObj.price
+        ? `có giá ${queryTextObj.price.toString().toLowerCase()}`
+        : ""
+    }
+    ${
+      queryTextObj.area
+        ? `diện tích ${queryTextObj.area.toString().toLowerCase()}`
+        : ""
+    }`;
     // dispatch(actions.getPostsLimit(queryCodesObj));
     // console.log(queryCodesObj);
     navigate(

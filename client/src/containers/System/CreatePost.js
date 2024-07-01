@@ -1,36 +1,62 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Address, Button, Loading, Overview } from "../../components";
-import { apiCreatePost, apiUploadImages } from "../../services";
+import { apiUploadImages } from "../../services";
 import { getCodes } from "../../utils/common/getCode";
+import validate from "../../utils/common/validateFields";
 import icons from "../../utils/icons";
 
 const { FcOldTimeCamera, FaTrashCan } = icons;
 
-const CreatePost = () => {
-  const [payload, setPayload] = useState({
-    categoryCode: "",
-    title: "",
-    userId: "",
-    priceNumber: "",
-    areaNumber: "",
-    images: "",
-    address: "",
-    priceCode: "",
-    areaCode: "",
-    description: "",
-    target: "",
-    province: "",
-    label: "",
+const CreatePost = ({ isEdit }) => {
+  const { dataEdit } = useSelector((state) => state.post);
+  const [payload, setPayload] = useState(() => {
+    if (isEdit) {
+      const initData = {
+        categoryCode: dataEdit?.categoryCode || "",
+        title: dataEdit?.title || "",
+        priceNumber: dataEdit?.priceNumber * Math.pow(10, 6) || "",
+        areaNumber: dataEdit?.areaNumber || "",
+        images: dataEdit?.images?.image
+          ? JSON.parse(dataEdit?.images?.image)
+          : "",
+        address: dataEdit?.address || "",
+        priceCode: dataEdit?.priceCode || "",
+        areaCode: dataEdit?.areaCode || "",
+        description: dataEdit?.description
+          ? JSON.parse(dataEdit?.description)
+          : "",
+        target: dataEdit?.overview?.target || "",
+        province: dataEdit?.province || "",
+      };
+      return initData;
+    }
+    return {
+      categoryCode: "",
+      category: "",
+      title: "",
+      priceNumber: "",
+      areaNumber: "",
+      images: "",
+      address: "",
+      priceCode: "",
+      areaCode: "",
+      description: "",
+      target: "",
+      province: "",
+      label: "",
+    };
   });
+
   const [isLoading, setIsLoading] = useState(false);
+  const [invalidFields, setInvalidFields] = useState([]);
+
   const { prices, areas, categories } = useSelector((state) => state.app);
-  // console.log(payload);
-  // console.log(areas, prices);
-  // console.log(getCodes(["2", "2"], prices));
+
   const handleFiles = async (e) => {
     setIsLoading(true);
     e.stopPropagation();
+    setInvalidFields([]);
     let images = [];
     const files = e.target.files;
     const formData = new FormData();
@@ -55,7 +81,9 @@ const CreatePost = () => {
     }));
   };
 
-  const [imagesPreview, setImagesPreview] = useState([]);
+  const [imagesPreview, setImagesPreview] = useState(() => {
+    return dataEdit?.images?.image ? JSON.parse(dataEdit?.images?.image) : [];
+  });
   const handleDeleteImage = (image) => {
     setImagesPreview((prev) => prev?.filter((item) => item !== image));
     setPayload((prev) => {
@@ -84,20 +112,61 @@ const CreatePost = () => {
       label: `${
         categories?.find((item) => item.code === payload?.categoryCode)?.value
       } ${payload?.address?.split(",")[0]}`,
+      category: categories?.find((item) => item.code === payload?.categoryCode)
+        ?.value,
     };
-    const response = await apiCreatePost(finalPayload);
-    console.log(response);
-  };
+    const result = validate(finalPayload, setInvalidFields);
+    if (result === 0) {
+      console.log(finalPayload);
+      if (isEdit && dataEdit) finalPayload.postId = dataEdit?.id;
+      // const response = await apiCreatePost(finalPayload);
 
+      // if (response?.data.err === 0) {
+      //   Swal.fire("Thành công", "Đã thêm bài bài đăng mới", "success").then(
+      //     () => {
+      //       setPayload({
+      //         categoryCode: "",
+      //         category: "",
+      //         title: "",
+      //         priceNumber: "",
+      //         areaNumber: "",
+      //         images: "",
+      //         address: "",
+      //         priceCode: "",
+      //         areaCode: "",
+      //         description: "",
+      //         target: "",
+      //         province: "",
+      //         label: "",
+      //       });
+      //       setImagesPreview([]);
+      //     }
+      //   );
+      // } else {
+      //   Swal.fire("Oops!", "Có lỗi xảy ra!!!", "error");
+      // }
+    }
+  };
+  // console.log(invalidFields);
   return (
     <div className="px-6 ">
       <h1 className="text-3xl font-medium py-4 border-b border-gray-200">
-        Đăng tin mới
+        {isEdit ? "Chỉnh sửa tin đăng" : " Đăng tin mới"}
       </h1>
       <div className="flex gap-4">
         <div className="py-4 flex flex-col gap-4 flex-auto">
-          <Address setPayload={setPayload} />
-          <Overview payload={payload} setPayload={setPayload} />
+          <Address
+            isEdit={isEdit}
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
+            setPayload={setPayload}
+          />
+          <Overview
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
+            payload={payload}
+            setPayload={setPayload}
+          />
           <div className="w-full">
             <h2 className="font-semibold text-xl py-4">Hình ảnh</h2>
             <small>Cập nhật hình ảnh rõ ràng sẽ cho thuê nhanh hơn</small>
@@ -105,6 +174,7 @@ const CreatePost = () => {
               <label
                 className="w-full border-2 border-gray-400 gap-4 flex flex-col items-center my-4 justify-center h-[200px] border-dashed rounded-md"
                 htmlFor="file"
+                onFocus={() => setInvalidFields([])}
               >
                 {isLoading ? (
                   <Loading />
@@ -121,10 +191,16 @@ const CreatePost = () => {
                 type="file"
                 id="file"
                 multiple
+                onFocus={() => setInvalidFields([])}
               />
+              <small className="text-red-500 block w-full">
+                {invalidFields?.some((item) => item.name === "images") &&
+                  invalidFields?.find((item) => item.name === "images")
+                    ?.message}
+              </small>
               <div className="w-full mb-6">
                 <h3 className="font-medium py-4">Ảnh đã chọn</h3>
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-4 items-center w-full flex-wrap">
                   {imagesPreview?.map((item, index) => {
                     return (
                       <div
@@ -151,7 +227,7 @@ const CreatePost = () => {
             </div>
           </div>
           <Button
-            text={"Tạo mới"}
+            text={isEdit ? "Cập nhật" : "Tạo mới"}
             onClick={handleSubmit}
             bgColor={"bg-green-600"}
             textColor={"text-white"}

@@ -49,20 +49,35 @@ export const getPostsLimitService = (
       const queries = {
         ...query,
       };
-      if (priceNumber) queries.priceNumber = { [Op.between]: priceNumber };
-      if (areaNumber) queries.areaNumber = { [Op.between]: areaNumber };
+      if (priceNumber) {
+        if (priceNumber[0] === priceNumber[1] && priceNumber[0] >= 15) {
+          queries.priceNumber = { [Op.gte]: priceNumber[0] };
+        } else {
+          queries.priceNumber = { [Op.between]: priceNumber };
+        }
+      }
+      if (areaNumber) {
+        if (areaNumber[0] === areaNumber[1] && areaNumber[0] >= 90) {
+          queries.areaNumber = { [Op.gte]: areaNumber[0] };
+        } else {
+          queries.areaNumber = { [Op.between]: areaNumber };
+        }
+      }
       /* priceNumber: {
             [Op.between]: priceNumber,
           },
           areaNumber: {
             [Op.between]: areaNumber,
           }, */
+      // console.log(priceNumber);
+      // console.log(areaNumber);
       const response = await db.Post.findAndCountAll({
         where: queries,
         raw: true,
         nest: true,
         offset: offset * +process.env.LIMIT,
         limit: +process.env.LIMIT,
+        order: [["createdAt", "DESC"]],
         include: [
           {
             model: db.Image,
@@ -143,10 +158,10 @@ export const createNewPostService = (body, userId) =>
         overviewId,
         imagesId,
         areaCode: body?.areaCode || null,
-        priceCode: body?.priceCode || null,
+        priceCode: body?.priceCode / Math.pow(10, 6) || null,
         provinceCode:
           generateCode(
-            body?.province?.include("Thành phố")
+            body?.province?.includes("Thành phố")
               ? body?.province?.replace("Thành phố ", "")
               : body?.province?.replace("Tỉnh ", "")
           ) || null,
@@ -185,10 +200,10 @@ export const createNewPostService = (body, userId) =>
           ],
         },
         defaults: {
-          code: body?.province?.include("Thành phố")
+          code: body?.province?.includes("Thành phố")
             ? generateCode(body?.province?.replace("Thành phố ", ""))
             : generateCode(body?.province?.replace("Tỉnh ", "")),
-          value: body?.province?.include("Thành phố")
+          value: body?.province?.includes("Thành phố")
             ? body?.province?.replace("Thành phố ", "")
             : body?.province?.replace("Tỉnh ", ""),
         },
@@ -202,7 +217,69 @@ export const createNewPostService = (body, userId) =>
       });
       resolve({
         err: response ? 0 : 1,
-        msg: response ? "OK" : "Gettin posts is failed.",
+        msg: response ? "OK" : "Gettin posts is failed." + error,
+        response,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+export const getPostsLimitAdminService = (page, id, query) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      let offset = !page || +page <= 1 ? 0 : +page - 1;
+      const queries = {
+        ...query,
+        userId: id,
+      };
+      const response = await db.Post.findAndCountAll({
+        where: queries,
+        raw: true,
+        nest: true,
+        offset: offset * +process.env.LIMIT,
+        limit: +process.env.LIMIT,
+        order: [["createdAt", "DESC"]],
+        include: [
+          {
+            model: db.Image,
+            as: "images",
+            attributes: ["image"],
+          },
+          {
+            model: db.Attribute,
+            as: "attributes",
+            attributes: ["price", "acreage", "published", "hashtag"],
+          },
+          {
+            model: db.User,
+            as: "user",
+            attributes: ["name", "zalo", "phone"],
+          },
+          {
+            model: db.Overview,
+            as: "overview",
+          },
+        ],
+        // attributes: ["id", "title", "star", "address", "description"],
+      });
+      resolve({
+        err: response ? 0 : 1,
+        msg: response ? "OK" : "Getting posts is failed.",
+        response,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+export const updatePostsService = (postId, payload) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const response = await db.Post.update(payload, {
+        where: { id: postId },
+      });
+      resolve({
+        err: response[0] > 0 ? 0 : 1,
+        msg: response[0] > 0 ? "Updated" : "Updating post failed " + error,
         response,
       });
     } catch (error) {

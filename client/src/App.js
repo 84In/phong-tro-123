@@ -9,7 +9,7 @@ import {
   Rental,
   SearchDetail,
 } from "./containers/Public";
-import { CreatePost, System } from "./containers/System/";
+import { CreatePost, ManagerPost, System } from "./containers/System/";
 import * as actions from "./store/actions";
 import { path } from "./utils/constant";
 function App() {
@@ -27,7 +27,7 @@ function App() {
     dispatch(actions.getProvinces());
   }, []);
   return (
-    <div className="w-full bg-primary">
+    <div className=" bg-primary overflow-hidden">
       <Routes>
         <Route path={path.HOME} element={<Home />}>
           <Route path="*" element={<Homepage />} />
@@ -45,6 +45,7 @@ function App() {
         </Route>
         <Route path={path.SYSTEM} element={<System />}>
           <Route path={path.CREATE_POST} element={<CreatePost />} />
+          <Route path={path.MANAGER_POST} element={<ManagerPost />} />
         </Route>
       </Routes>
     </div>

@@ -17,4 +17,5 @@ export { default as RelatedPost } from "./RelatedPost";
 export { default as SearchItem } from "./SearchItem";
 export { default as Select } from "./Select";
 export { default as Sitem } from "./Sitem";
+export { default as UpdatePost } from "./UpdatePost";
 export { default as User } from "./User";

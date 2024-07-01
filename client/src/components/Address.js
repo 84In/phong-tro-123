@@ -1,4 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { InputReadOnly, Select } from "../components";
 import {
   apiGetPublicDistricts,
@@ -6,7 +7,21 @@ import {
   apiGetPublicWards,
 } from "../services";
 
-const Address = ({ setPayload }) => {
+const Address = ({ setPayload, invalidFields, setInvalidFields, isEdit }) => {
+  const formatWard = (stringWard) => {
+    const arrWard = stringWard.split(" ");
+    return arrWard
+      ?.map((item) => {
+        if (+item < 10) {
+          item = `0${item}`;
+        }
+      })
+      .toString()
+      .replace(",", " ");
+  };
+
+  const { dataEdit } = useSelector((state) => state.post);
+
   const [reset, setReset] = useState(false);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -14,6 +29,56 @@ const Address = ({ setPayload }) => {
   const [province, setProvince] = useState();
   const [district, setDistrict] = useState();
   const [ward, setWard] = useState();
+
+  useEffect(() => {
+    if (dataEdit?.address && provinces && isEdit) {
+      let addressArr = dataEdit?.address?.split(",");
+      let foundProvince =
+        provinces?.length > 0 &&
+        provinces?.find((item) =>
+          item.province_name
+            ?.trim()
+            ?.includes(addressArr[addressArr.length - 1]?.trim())
+        );
+      // console.log(foundProvince);
+      setProvince(foundProvince.province_id);
+    } else {
+      setProvince("");
+    }
+  }, [provinces]);
+
+  useEffect(() => {
+    if (dataEdit?.address && districts && isEdit) {
+      let addressArr = dataEdit?.address?.split(",");
+      let foundDistrict =
+        districts?.length > 0 &&
+        districts?.find((item) =>
+          item.district_name
+            .trim()
+            .includes(addressArr[addressArr.length - 2]?.trim())
+        );
+      setDistrict(foundDistrict.district_id);
+    } else {
+      setDistrict("");
+    }
+  }, [province, districts]);
+
+  useEffect(() => {
+    if (dataEdit?.address && wards && isEdit) {
+      let addressArr = dataEdit?.address?.split(",");
+      let foundWard =
+        wards?.length > 0 &&
+        wards?.find((item) =>
+          item.ward_name
+            .trim()
+            .replace("0", "")
+            .includes(formatWard(addressArr[addressArr.length - 3]?.trim()))
+        );
+      setWard(foundWard.ward_id);
+    } else {
+      setWard("");
+    }
+  }, [district, wards]);
   useEffect(() => {
     const fetchPublicProvinces = async () => {
       const response = await apiGetPublicProvinces();
@@ -55,10 +120,10 @@ const Address = ({ setPayload }) => {
               wards?.find((item) => item.ward_id === ward)?.ward_name ===
               undefined
                 ? ""
-                : `${wards?.find((item) => item.ward_id === ward)?.ward_name},`
+                : `${wards?.find((item) => item.ward_id === ward)?.ward_name}, `
             }`
           : ""
-      }  ${
+      }${
         district
           ? `${
               districts?.find((item) => item.district_id === district)
@@ -67,10 +132,10 @@ const Address = ({ setPayload }) => {
                 : `${
                     districts?.find((item) => item.district_id === district)
                       ?.district_name
-                  },`
+                  }, `
             }`
           : ""
-      } ${
+      }${
         province
           ? provinces?.find((item) => item.province_id === province)
               ?.province_name
@@ -82,12 +147,15 @@ const Address = ({ setPayload }) => {
         : "",
     }));
   }, [province, district, ward]);
+
   return (
     <div>
       <h2 className="font-semibold text-xl py-4">Địa chỉ cho thuê</h2>
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <Select
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
             reset={reset}
             value={province}
             label={"Tỉnh/Thành phố"}
@@ -96,6 +164,8 @@ const Address = ({ setPayload }) => {
             type={"province"}
           />
           <Select
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
             type={"district"}
             label={"Quận/Huyện"}
             value={district}
@@ -103,6 +173,8 @@ const Address = ({ setPayload }) => {
             options={districts}
           />
           <Select
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
             type={"ward"}
             label={"Phường/Xã"}
             value={ward}

@@ -3,8 +3,10 @@ import actionTypes from "../actions/actionType";
 const initState = {
   posts: [],
   newPosts: [],
+  postOfUserCurrent: [],
   msg: "",
   count: 0,
+  dataEdit: [],
 };
 
 const postReducer = (state = initState, action) => {
@@ -22,6 +24,17 @@ const postReducer = (state = initState, action) => {
         ...state,
         newPosts: action.newPosts || [],
         msg: action.msg || "",
+      };
+    case actionTypes.GET_POSTS_ADMIN:
+      return {
+        ...state,
+        postOfUserCurrent: action.posts || [],
+        msg: action.msg || "",
+      };
+    case actionTypes.EDIT_DATA:
+      return {
+        ...state,
+        dataEdit: action.dataEdit || [],
       };
     default:
       return state;

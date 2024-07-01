@@ -11,8 +11,10 @@ const actionTypes = {
   GET_AREAS: "GET_AREAS",
   GET_NEW_POSTS: "GET_NEW_POSTS",
   GET_PROVINCES: "GET_PROVINCES",
+  EDIT_DATA: "EDIT_DATA",
 
   //user
   GET_CURRENT: "GET_CURRENT",
+  GET_POSTS_ADMIN: "GET_POSTS_ADMIN",
 };
 export default actionTypes;

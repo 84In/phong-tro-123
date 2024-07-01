@@ -1,14 +1,14 @@
-import React from "react";
+import React, { memo } from "react";
 import { useSelector } from "react-redux";
 import { InputFormV2, InputReadOnly, Select } from "./";
 
 const targets = [
+  { code: "Tất cả", value: "Tất cả" },
   { code: "Nam", value: "Nam" },
   { code: "Nữ", value: "Nữ" },
-  { code: "Khác ", value: "Khác" },
 ];
 
-const Overview = ({ payload, setPayload }) => {
+const Overview = ({ payload, setPayload, invalidFields, setInvalidFields }) => {
   const { categories } = useSelector((state) => state.app);
   const { currentData } = useSelector((state) => state.user);
   return (
@@ -17,6 +17,8 @@ const Overview = ({ payload, setPayload }) => {
       <div className="w-full flex flex-col gap-4">
         <div className="w-1/2">
           <Select
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
             value={payload.categoryCode}
             label={"Loại chuyên mục"}
             options={categories}
@@ -25,6 +27,8 @@ const Overview = ({ payload, setPayload }) => {
           />
         </div>
         <InputFormV2
+          invalidFields={invalidFields}
+          setInvalidFields={setInvalidFields}
           value={payload.title}
           setValue={setPayload}
           label={"Tiêu đề"}
@@ -44,7 +48,13 @@ const Overview = ({ payload, setPayload }) => {
             onChange={(e) =>
               setPayload((prev) => ({ ...prev, description: e.target.value }))
             }
+            onFocus={() => setInvalidFields([])}
           ></textarea>
+          <small className="text-red-500 block w-full">
+            {invalidFields?.some((item) => item.name === "description") &&
+              invalidFields?.find((item) => item.name === "description")
+                ?.message}
+          </small>
         </div>
 
         <div className="w-1/2">
@@ -61,6 +71,8 @@ const Overview = ({ payload, setPayload }) => {
             value={payload.priceNumber}
             setValue={setPayload}
             unit={"Đồng"}
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
           />
           <InputFormV2
             name={"areaNumber"}
@@ -69,6 +81,8 @@ const Overview = ({ payload, setPayload }) => {
             label={"Diện tích"}
             id={"areaRent"}
             unit={"m2"}
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
           />
           <Select
             value={payload.target}
@@ -76,6 +90,8 @@ const Overview = ({ payload, setPayload }) => {
             name={"target"}
             label={"Đối tượng cho thuê"}
             options={targets}
+            invalidFields={invalidFields}
+            setInvalidFields={setInvalidFields}
           />
         </div>
       </div>
@@ -83,4 +99,4 @@ const Overview = ({ payload, setPayload }) => {
   );
 };
 
-export default Overview;
+export default memo(Overview);

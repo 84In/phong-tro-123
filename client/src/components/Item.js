@@ -27,7 +27,7 @@ const Item = ({
   return (
     <div className="w-full flex border-t border-orange-600 p-4">
       <Link
-        to={`chi-tiet/${formartVietnameseToString(title)}/${id}`}
+        to={`/chi-tiet/${formartVietnameseToString(title)}/${id}`}
         className="w-3/6 flex flex-wrap gap-[2px] items-center justify-center relative cursor-pointer"
       >
         {images.length > 0 &&
