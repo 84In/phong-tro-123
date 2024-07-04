@@ -78,3 +78,29 @@ export const apiGetPostsLimitAdmin = (query) =>
       reject(error);
     }
   });
+export const apiUpdatePost = (payload) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const response = await axiosConfig({
+        method: "PUT",
+        url: `/api/v1/post/update-post`,
+        data: payload,
+      });
+      resolve(response);
+    } catch (error) {
+      reject(error);
+    }
+  });
+export const apiDeletePost = (payload) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const response = await axiosConfig({
+        method: "DELETE",
+        url: `/api/v1/post/delete-post`,
+        params: payload,
+      });
+      resolve(response);
+    } catch (error) {
+      reject(error);
+    }
+  });

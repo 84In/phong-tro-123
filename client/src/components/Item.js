@@ -78,9 +78,7 @@ const Item = ({
             {`${attributes?.price}`}
           </span>
           <span className="flex-1">{attributes?.acreage}</span>
-          <span className="flex-3 whitespace-nowrap overflow-hidden text-ellipsis">{`${
-            address.split(",")[address.split(",").length - 2]
-          },${address.split(",")[address.split(",").length - 1]}`}</span>
+          <span className="flex-3 whitespace-nowrap overflow-hidden text-ellipsis">{`${address}`}</span>
         </div>
         <p className="text-gray-500 w-full h-[60px]  whitespace-break-spaces overflow-hidden text-ellipsis">
           {description}

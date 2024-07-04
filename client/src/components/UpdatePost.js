@@ -15,7 +15,7 @@ const UpdatePost = ({ setIsEdit }) => {
         className="bg-white max-w-1100 w-full overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <CreatePost isEdit />
+        <CreatePost isEdit setIsEdit={setIsEdit} />
       </div>
     </div>
   );

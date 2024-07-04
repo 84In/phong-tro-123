@@ -7,22 +7,27 @@ import {
   apiGetPublicWards,
 } from "../services";
 
-const Address = ({ setPayload, invalidFields, setInvalidFields, isEdit }) => {
+const Address = ({
+  setPayload,
+  invalidFields,
+  setInvalidFields,
+  isEdit,
+  resetValue,
+}) => {
   const formatWard = (stringWard) => {
-    const arrWard = stringWard.split(" ");
-    return arrWard
-      ?.map((item) => {
-        if (+item < 10) {
-          item = `0${item}`;
-        }
-      })
-      .toString()
-      .replace(",", " ");
+    const arrWard = stringWard?.split(" ");
+    arrWard?.map((item) => {
+      if (+item < 10) {
+        item = `0${item}`;
+      }
+    });
+
+    return arrWard?.toString()?.replace(",", " ");
   };
 
   const { dataEdit } = useSelector((state) => state.post);
 
-  const [reset, setReset] = useState(false);
+  const [reset, setReset] = useState(resetValue);
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -68,13 +73,12 @@ const Address = ({ setPayload, invalidFields, setInvalidFields, isEdit }) => {
       let addressArr = dataEdit?.address?.split(",");
       let foundWard =
         wards?.length > 0 &&
-        wards?.find((item) =>
-          item.ward_name
-            .trim()
-            .replace("0", "")
-            .includes(formatWard(addressArr[addressArr.length - 3]?.trim()))
+        wards?.find(
+          (item) =>
+            item.ward_name.trim() ===
+            formatWard(addressArr[addressArr.length - 3]?.trim())?.toString()
         );
-      setWard(foundWard.ward_id);
+      setWard(foundWard?.ward_id || "");
     } else {
       setWard("");
     }

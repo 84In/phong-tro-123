@@ -78,15 +78,33 @@ export const getPostsLimitAdmin = async (req, res) => {
   }
 };
 export const updatePost = async (req, res) => {
-  const { postId, ...payload } = req.body;
+  const { postId, overviewId, imagesId, attributesId, ...payload } = req.body;
   const { id } = req.user;
   try {
-    if (!postId || !id)
+    if (!postId || !id || !overviewId || !imagesId || !attributesId)
       return res.status(400).json({
         err: 1,
         msg: "Missing inputs",
       });
-    const response = await postService.updatePostsService(postId, payload );
+    const response = await postService.updatePostsService(req.body);
+    return res.status(200).json(response);
+  } catch (error) {
+    return res.status(500).json({
+      err: -1,
+      msg: "Failed at post controller. " + error,
+    });
+  }
+};
+export const deletePost = async (req, res) => {
+  const { postId, overviewId, imagesId, attributesId } = req.query;
+  const { id } = req.user;
+  try {
+    if (!postId || !id || !overviewId || !imagesId || !attributesId)
+      return res.status(400).json({
+        err: 1,
+        msg: "Missing inputs",
+      });
+    const response = await postService.deletePostService(req.query);
     return res.status(200).json(response);
   } catch (error) {
     return res.status(500).json({

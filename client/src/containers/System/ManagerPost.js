@@ -1,20 +1,77 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
 import { Button, UpdatePost } from "../../components";
+import { apiDeletePost } from "../../services";
 import * as actions from "../../store/actions";
 import checkStatus from "../../utils/common/checkStatus";
 import formatDate from "../../utils/common/formatDate";
 
 const ManagerPost = () => {
-  const valueCheck = ["Đang hoạt động", "Sắp hết hạn", "Đã quá hạn"];
+  const valueCheck = [
+    { value: 1, name: "Đang hoạt động" },
+    { value: 2, name: "Sắp hết hạn" },
+    { value: 0, name: "Đã quá hạn" },
+  ];
   const [isEdit, setIsEdit] = useState(false);
+  const [updateData, setUpdateData] = useState(false);
   const { postOfUserCurrent } = useSelector((state) => state.post);
+  const [posts, setPosts] = useState([]);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(actions.getPostsLimitAdmin());
-  }, []);
-
+  }, [isEdit, updateData]);
+  const handleDeletePost = async (post) => {
+    const payload = {
+      postId: post.id,
+      overviewId: post.overviewId,
+      attributesId: post.attributesId,
+      imagesId: post.imagesId,
+    };
+    const response = await apiDeletePost(payload);
+    if (response?.data.err === 0) {
+      setUpdateData((prev) => !prev);
+    } else {
+      Swal.fire("Oops!", "Xoá tin đăng thất bại", "error");
+    }
+  };
+  const check = (date1, date2, status) => checkStatus(date1, date2) === status;
+  useEffect(() => {
+    setPosts(postOfUserCurrent);
+  }, [postOfUserCurrent]);
   // console.log(postOfUserCurrent);
+  const handleFilterByStatus = (statusCode) => {
+    if (+statusCode === 1) {
+      const activePost = postOfUserCurrent?.filter((item) =>
+        check(
+          item?.overview?.created,
+          item?.overview?.expired,
+          valueCheck[0].name
+        )
+      );
+      setPosts(activePost);
+    } else if (+statusCode === 2) {
+      const aboutToExpirePost = postOfUserCurrent?.filter((item) =>
+        check(
+          item?.overview?.created,
+          item?.overview?.expired,
+          valueCheck[1].name
+        )
+      );
+      setPosts(aboutToExpirePost);
+    } else if (+statusCode === 0) {
+      const nonActivePost = postOfUserCurrent?.filter((item) =>
+        check(
+          item?.overview?.created,
+          item?.overview?.expired,
+          valueCheck[2].name
+        )
+      );
+      setPosts(nonActivePost);
+    } else if (+statusCode === 3) {
+      setPosts(postOfUserCurrent);
+    }
+  };
   return (
     <div className="flex flex-col gap-6">
       <div className="py-4 border-b border-gray-200 flex items-center justify-between">
@@ -23,12 +80,15 @@ const ManagerPost = () => {
         </h1>
         <select
           className="outline-none border px-2 py-1 border-gray-200 rounded-md"
-          name=""
-          id=""
+          onChange={(e) => handleFilterByStatus(e.target.value)}
         >
-          <option value="">Lọc theo trạng thái</option>
+          <option value="3">Lọc theo trạng thái</option>
           {valueCheck?.map((item) => {
-            return <option value={item}>{item}</option>;
+            return (
+              <option key={item.value} value={item.value}>
+                {item.name}
+              </option>
+            );
           })}
         </select>
       </div>
@@ -47,14 +107,14 @@ const ManagerPost = () => {
             </tr>
           </thead>
           <tbody>
-            {!postOfUserCurrent ? (
+            {!posts ? (
               <tr>
                 <td className="border px-2 py-1">
                   Bạn chưa có tin đăng nào, bấm vào đây để đăng tin
                 </td>
               </tr>
             ) : (
-              postOfUserCurrent?.map((item) => {
+              posts?.map((item) => {
                 return (
                   <tr key={item.id} className="flex">
                     <td className="border flex items-center justify-center flex-1 px-2 py-1 ">
@@ -90,12 +150,12 @@ const ManagerPost = () => {
                         checkStatus(
                           item?.overview?.created,
                           item?.overview?.expired
-                        ) === valueCheck[0]
+                        ) === valueCheck[0].name
                           ? "italic text-green-400"
                           : checkStatus(
                               item?.overview?.created,
                               item?.overview?.expired
-                            ) === valueCheck[1]
+                            ) === valueCheck[1].name
                           ? "italic text-yellow-300"
                           : "italic text-red-600"
                       }`}
@@ -114,7 +174,11 @@ const ManagerPost = () => {
                         }}
                         bgColor={"bg-green-500"}
                       />
-                      <Button text={"Xoá"} bgColor={"bg-orange-500"} />
+                      <Button
+                        text={"Xoá"}
+                        onClick={() => handleDeletePost(item)}
+                        bgColor={"bg-orange-500"}
+                      />
                     </td>
                   </tr>
                 );

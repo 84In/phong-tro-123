@@ -36,6 +36,11 @@ const postReducer = (state = initState, action) => {
         ...state,
         dataEdit: action.dataEdit || [],
       };
+    case actionTypes.RESET_DATA_EDIT:
+      return {
+        ...state,
+        dataEdit: null,
+      };
     default:
       return state;
   }

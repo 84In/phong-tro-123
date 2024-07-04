@@ -1,14 +1,18 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
 import { Address, Button, Loading, Overview } from "../../components";
-import { apiUploadImages } from "../../services";
+import { apiCreatePost, apiUpdatePost, apiUploadImages } from "../../services";
+import * as actions from "../../store/actions";
 import { getCodes } from "../../utils/common/getCode";
 import validate from "../../utils/common/validateFields";
 import icons from "../../utils/icons";
 
 const { FcOldTimeCamera, FaTrashCan } = icons;
 
-const CreatePost = ({ isEdit }) => {
+const CreatePost = ({ isEdit, setIsEdit }) => {
+  const dispatch = useDispatch();
+
   const { dataEdit } = useSelector((state) => state.post);
   const [payload, setPayload] = useState(() => {
     if (isEdit) {
@@ -50,6 +54,7 @@ const CreatePost = ({ isEdit }) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [invalidFields, setInvalidFields] = useState([]);
+  const [reset, setReset] = useState(false);
 
   const { prices, areas, categories } = useSelector((state) => state.app);
 
@@ -82,7 +87,11 @@ const CreatePost = ({ isEdit }) => {
   };
 
   const [imagesPreview, setImagesPreview] = useState(() => {
-    return dataEdit?.images?.image ? JSON.parse(dataEdit?.images?.image) : [];
+    if (isEdit) {
+      return dataEdit?.images?.image ? JSON.parse(dataEdit?.images?.image) : [];
+    } else {
+      return [];
+    }
   });
   const handleDeleteImage = (image) => {
     setImagesPreview((prev) => prev?.filter((item) => item !== image));
@@ -98,7 +107,9 @@ const CreatePost = ({ isEdit }) => {
       [+payload.priceNumber / 1000000, +payload.priceNumber / 1000000],
       prices
     );
+    // console.log(priceCodeArr);
     let priceCode = priceCodeArr[priceCodeArr.length - 1]?.code;
+
     let areaCodeArr = getCodes(
       [+payload.areaNumber, +payload.areaNumber],
       areas
@@ -116,38 +127,54 @@ const CreatePost = ({ isEdit }) => {
         ?.value,
     };
     const result = validate(finalPayload, setInvalidFields);
+    let response = "";
     if (result === 0) {
-      console.log(finalPayload);
-      if (isEdit && dataEdit) finalPayload.postId = dataEdit?.id;
-      // const response = await apiCreatePost(finalPayload);
+      if (isEdit && dataEdit) {
+        finalPayload.postId = dataEdit?.id;
+        finalPayload.attributesId = dataEdit?.attributesId;
+        finalPayload.imagesId = dataEdit?.imagesId;
+        finalPayload.overviewId = dataEdit?.overviewId;
+        response = await apiUpdatePost(finalPayload);
+      } else {
+        response = await apiCreatePost(finalPayload);
+      }
 
-      // if (response?.data.err === 0) {
-      //   Swal.fire("Thành công", "Đã thêm bài bài đăng mới", "success").then(
-      //     () => {
-      //       setPayload({
-      //         categoryCode: "",
-      //         category: "",
-      //         title: "",
-      //         priceNumber: "",
-      //         areaNumber: "",
-      //         images: "",
-      //         address: "",
-      //         priceCode: "",
-      //         areaCode: "",
-      //         description: "",
-      //         target: "",
-      //         province: "",
-      //         label: "",
-      //       });
-      //       setImagesPreview([]);
-      //     }
-      //   );
-      // } else {
-      //   Swal.fire("Oops!", "Có lỗi xảy ra!!!", "error");
-      // }
+      if (response?.data.err === 0) {
+        Swal.fire(
+          "Thành công",
+          isEdit ? "Cập nhật bài thành công" : "Đã thêm bài bài đăng mới",
+          "success"
+        ).then(() => {
+          resetPayload();
+          setImagesPreview([]);
+          setReset(true);
+          dispatch(actions.resetDataEdit());
+          if (isEdit) {
+            setIsEdit(false);
+          }
+        });
+      } else {
+        Swal.fire("Oops!", "Có lỗi xảy ra!!!", "error");
+      }
     }
   };
-  // console.log(invalidFields);
+  const resetPayload = () => {
+    setPayload({
+      categoryCode: "",
+      category: "",
+      title: "",
+      priceNumber: "",
+      areaNumber: "",
+      images: "",
+      address: "",
+      priceCode: "",
+      areaCode: "",
+      description: "",
+      target: "",
+      province: "",
+      label: "",
+    });
+  };
   return (
     <div className="px-6 ">
       <h1 className="text-3xl font-medium py-4 border-b border-gray-200">
@@ -156,6 +183,7 @@ const CreatePost = ({ isEdit }) => {
       <div className="flex gap-4">
         <div className="py-4 flex flex-col gap-4 flex-auto">
           <Address
+            resetValue={reset}
             isEdit={isEdit}
             invalidFields={invalidFields}
             setInvalidFields={setInvalidFields}
